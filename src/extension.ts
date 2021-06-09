@@ -1,15 +1,14 @@
-import * as vscode from "vscode";
 import Schema from "./Schema";
 import SchemaCompletionProvider from "./SchemaCompletionProvider";
 import SchemaDefinitionProvider from "./SchemaDefinitionProvider";
 import SymbolCompletionProvider from "./SymbolCompletionProvider";
-import Commands from "./Commands";
+import { ExtensionContext, workspace, languages, WorkspaceFolder } from "coc.nvim";
 
 const GLOB_PATTERN = "db/schema.rb";
 const SELECTOR = ["ruby", "erb", "haml", "slim"];
 
-export async function activate(context: vscode.ExtensionContext) {
-  const schemaFiles = await vscode.workspace.findFiles(GLOB_PATTERN);
+export async function activate(context: ExtensionContext) {
+  const schemaFiles = await workspace.findFiles(GLOB_PATTERN);
   if (schemaFiles.length < 1) {
     return;
   }
@@ -20,9 +19,9 @@ export async function activate(context: vscode.ExtensionContext) {
   schema.load();
   context.subscriptions.push(schema);
 
-  const fileWatcher = vscode.workspace.createFileSystemWatcher(
+  const fileWatcher = workspace.createFileSystemWatcher(
     new vscode.RelativePattern(
-      vscode.workspace.getWorkspaceFolder(schemaFile) as vscode.WorkspaceFolder,
+      workspace.getWorkspaceFolder(schemaFile) as WorkspaceFolder,
       GLOB_PATTERN
     )
   );
@@ -32,7 +31,7 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(fileWatcher);
 
   context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
+    languages.registerCompletionItemProvider(
       SELECTOR,
       new SchemaCompletionProvider(schema),
       "."
@@ -40,7 +39,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.languages.registerCompletionItemProvider(
+    languages.registerCompletionItemProvider(
       SELECTOR,
       new SymbolCompletionProvider(schema),
       ":"
@@ -48,7 +47,7 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.languages.registerDefinitionProvider(
+    languages.registerDefinitionProvider(
       SELECTOR,
       new SchemaDefinitionProvider(schema)
     )
@@ -57,13 +56,13 @@ export async function activate(context: vscode.ExtensionContext) {
   const commands = new Commands(schema);
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("railsDbSchema.open", async (...args) => {
+    commands.registerCommand("railsDbSchema.open", async (...args) => {
       await commands.open(...args);
     })
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("railsDbSchema.insert", async () => {
+    commands.registerCommand("railsDbSchema.insert", async () => {
       await commands.insert();
     })
   );

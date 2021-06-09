@@ -1,5 +1,5 @@
 import { tableize } from "inflection";
-import { CompletionItemProvider, TextDocument, Position, Range } from "vscode";
+import { CompletionItemProvider, TextDocument, Position, Range } from "coc.nvim";
 import buildCompletionItems from "./buildCompletionItems";
 import Schema from "./Schema";
 
@@ -13,18 +13,18 @@ export default class SymbolCompSchemaletionProvider
   public provideCompletionItems(document: TextDocument, position: Position) {
     const lineText = document
       .getText(
-        new Range(
-          new Position(position.line, 0),
-          new Position(position.line, position.character)
+        Range.create(
+          Position.create(position.line, 0),
+          Position.create(position.line, position.character)
         )
       )
       .trim();
 
     if (
-      MODEL_FILENAME_PATTERN.test(document.fileName) &&
+      MODEL_FILENAME_PATTERN.test(document.uri) &&
       lineText === "validates :"
     ) {
-      const table = this.schema.getTableByFileName(document.fileName);
+      const table = this.schema.getTableByFileName(document.uri);
       return table ? buildCompletionItems(table) : undefined;
     }
 

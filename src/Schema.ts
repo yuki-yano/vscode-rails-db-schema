@@ -1,4 +1,4 @@
-import { Uri, workspace, TextDocument, Disposable } from "vscode";
+import { Uri, workspace, TextDocument, Disposable, Document } from "coc.nvim";
 import * as path from "path";
 import { tableize } from "inflection";
 import Parser, { Table } from "./Parser";
@@ -12,8 +12,8 @@ export default class Schema implements Disposable {
     this.tables.clear();
   }
 
-  public async load() {
-    const document = await workspace.openTextDocument(this.uri);
+  public load() {
+    const document = workspace.getDocument(this.uri.path);
     this.parse(document);
   }
 
@@ -42,7 +42,7 @@ export default class Schema implements Disposable {
     return this.tables.has(tableName) ? tableName : undefined;
   }
 
-  private parse(document: TextDocument) {
+  private parse(document: Document) {
     const parser = new Parser(document);
 
     for (const table of parser.parseTables()) {

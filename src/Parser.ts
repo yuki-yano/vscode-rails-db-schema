@@ -1,4 +1,4 @@
-import { TextDocument, Range } from "vscode";
+import { Range, Document, Position } from "coc.nvim";
 import { classify } from "inflection";
 
 interface Column {
@@ -21,20 +21,19 @@ const END_TABLE_REGEX = /^\s+end$/;
 const COLUMN_REGEXP = /t\.(\w+)\s+"(\w+)".*?(?:,\s+comment:\s+"([^"]*)")?/;
 
 export default class Parser {
-  constructor(private document: TextDocument) {}
+  constructor(private document: Document) {}
 
   public *parseTables() {
     let table: Partial<Table> = {};
 
     for (const line of this.documentLines(this.document)) {
-      const text = line.text;
+      const text = line.text
 
       if (text.trimLeft().startsWith("create_table")) {
         const matches = text.match(CREATE_TABLE_REGEX);
         const tableName = matches![1];
         table.line = line.lineNumber;
-        table.className = classify(tableName);
-        table.tableName = tableName;
+        table.className = classify(tableName); table.tableName = tableName;
         table.columns = new Map();
 
         continue;
@@ -61,10 +60,16 @@ export default class Parser {
     }
   }
 
-  private *documentLines(document: TextDocument) {
+  private *documentLines(document: Document) {
     const lineCount = document.lineCount;
     for (let i = 0; i < lineCount; i++) {
-      yield document.lineAt(i);
+      const text = document.getline(i)
+      const range = Range.create(Position.create(lineCount, 0), Position.create(lineCount, text.length))
+      yield {
+        text,
+        lineNumber: lineCount,
+        range
+      }
     }
   }
 }

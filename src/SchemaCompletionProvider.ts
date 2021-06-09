@@ -1,4 +1,4 @@
-import { CompletionItemProvider, TextDocument, Position, Range } from "vscode";
+import { CompletionItemProvider, TextDocument, Position, Range } from "coc.nvim";
 import { tableize } from "inflection";
 import Schema from "./Schema";
 import buildCompletionItems from "./buildCompletionItems";
@@ -11,9 +11,9 @@ export default class SchemaCompSchemaletionProvider
 
   public provideCompletionItems(document: TextDocument, position: Position) {
     const text = document.getText(
-      new Range(
-        new Position(position.line, 0),
-        new Position(position.line, position.character)
+      Range.create(
+        Position.create(position.line, 0),
+        Position.create(position.line, position.character)
       )
     );
     const matches = text.match(LINE_PETTERN);
@@ -24,7 +24,7 @@ export default class SchemaCompSchemaletionProvider
     const [, receiver] = matches;
 
     if (!receiver || receiver === "self") {
-      const table = this.schema.getTableByFileName(document.fileName);
+      const table = this.schema.getTableByFileName(document.uri);
       return table ? buildCompletionItems(table) : null;
     }
 

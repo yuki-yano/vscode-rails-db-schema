@@ -1,4 +1,4 @@
-import { DefinitionProvider, TextDocument, Position, Location } from "vscode";
+import { DefinitionProvider, TextDocument, Position, Location, Document } from "coc.nvim";
 import { tableize } from "inflection";
 import Schema from "./Schema";
 
@@ -7,27 +7,27 @@ const METHOD_PETTERN = /(?:(\w+)\.)?(\w+)(?:[^.\w]|$)/;
 export default class SchemaDefinitionProvider implements DefinitionProvider {
   constructor(private schema: Schema) {}
 
-  public provideDefinition(document: TextDocument, position: Position) {
+  public provideDefinition(document: Document, position: Position) {
     const range = document.getWordRangeAtPosition(position, METHOD_PETTERN);
     if (!range) {
       return;
     }
 
-    const text = document.getText(range);
+    const text = document.textDocument.getText(range);
     const matches = text.match(METHOD_PETTERN);
     if (!matches) {
       return;
     }
 
     const [, receiver, columnName] = matches;
-    const table = this.getTable(receiver, document);
+    const table = this.getTable(receiver, document.textDocument);
     if (!table) {
       return;
     }
 
     const originSelectionRange = receiver
       ? range.with(
-          new Position(
+          Position.create(
             range.start.line,
             range.start.character + receiver.length + 1
           )
@@ -52,7 +52,7 @@ export default class SchemaDefinitionProvider implements DefinitionProvider {
       return this.schema.getTable(tableize(receiver));
     }
 
-    const tableName = this.schema.getTableNameByFileName(document.fileName);
+    const tableName = this.schema.getTableNameByFileName(document.uri);
     return tableName ? this.schema.getTable(tableName) : null;
   }
 }

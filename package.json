@@ -6,7 +6,7 @@
   "publisher": "aki77",
   "icon": "images/icon.png",
   "engines": {
-    "vscode": "^1.37.0"
+    "coc": "^0.0.80"
   },
   "categories": [
     "Other"
@@ -59,7 +59,9 @@
     "vscode-test": "^1.0.2"
   },
   "dependencies": {
+    "coc.nvim": "^0.0.80",
     "inflection": "^1.12.0",
-    "sort-on": "^4.1.0"
+    "sort-on": "^4.1.0",
+    "vscode-languageserver-protocol": "^3.16.0"
   }
 }
